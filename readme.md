@@ -1,42 +1,28 @@
-## 🏆 Dacon Stock Price Prediction - 1st Place Solution
-![Python](https://img.shields.io/badge/Python-3.8-blue.svg)
+## 🏆 Kaggle NeurIPS2024 - Top5%(81th) SilverMedal Solution
+![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Machine Learning](https://img.shields.io/badge/Machine%20Learning-Success-green)
 
 ## Introduction
-- 국내 KOSPI200, KOSDAQ150 종목들에 대해 미래 5일간의 주식 종료 가격을 예측하는 task
-- Public기간: 11월 1일 ~ 11월 5일 / Private기간: 11월 29일 ~ 12월 3일
-- [Solution Link](https://dacon.io/competitions/official/235857/codeshare/4095?page=2&dtype=recent)
+- 특정 단백질 표적에 대한 소분자의 결합 친화도를 예측하는 모델을 개발하는 task
+- 약물 유사 소분자(화학물질)가 세 가지 가능한 단백질 표적에 결합할지 예측하는 데 도움을 주어 약물 발견을 위한 길을 닦는데 기여하게 됨
+- [Solution Link](https://www.kaggle.com/code/cafelatte1/81th-solution-1dcnn-with-all-data-feat-densenet)
 
 ## Dataset
-- 개별종목 주가 데이터
-- 개별종목 재무 데이터
-- 인덱스 지수 데이터
-- 환율 데이터
+- Protein Sequence
+- 3가지 단백질 표적 결합 유무
 
 ## CV Strategy
-- 전체 데이터 내 가장 최근일부터 일주일 간격으로 5-CV 검증데이터셋 구축
+- Target group별 층화추출 샘플링을 통한 검증시스템 구축
+- 대용량데이터로 인해 holdout 전략 사용
 
 ## Preprocessing & Feature Engineering
-- 현재일로부터 5일 뒤 까지 Multi-Target 구성
-- Multi-Target에 대해 smoothing 함수를 적용하여 일반화 성능 향상 도모
-- 주가 데이터로부터 다양한 투지지표를 산출하여 추가 feature로 활용
+- 아미노산을 개별 character처럼 취급하여 정수로 인코딩
 
 ## Modeling
-- 단일 **선형회귀모델**만을 활용하여 추론했을 때 가장 높은 성능
-- 단기 주가예측에 있어서는 복잡한 패턴을 반영할 필요성이 크지 않다는 사실을 보임
+- 아미노산을 하나의 token으로 취급하여 transformer 아키텍처를 통해 관계를 학습
+- 1D Convolution Block을 통해 Molecule Smiles 분자 간의 관계를 학습시킨 후 Dense Block을 통해 최종 분류를 할 수 있도록 학습함
 
 ## Core Strategy
-### 1. Target Smooting
-- 급등락이 심한 종목에 대해서는 이상치로 간주하였고, 이를 훈련 샘플에서 제외시키는 대신 **가격(target)을 조정하는 연산**을 적용하였다. 이는 본 아키텍처만의 차별화된 핵심 전략이고 산식은 아래와 같다.
- 
-$Cutoff = A * (1 + B * T)$
-
-*A : 주가 등락 조정 threshold, B : theshold multiplier, T : 최근 알려진 종가와 떨어진 거리 (단위: 일)*
-- 최근 종가와 예측 종가의 변화율이 위에 의해 계산된 Cutoff 보다 높거나(혹은 낮으면) Cutoff와 같게 종가를 조정한다. **(내부 검증 결과 약 2.5% 성능 향상)**
-
-### 2. Market Trend Factor
-$Adj.Pred = Pred * (1 + ROUND(USDtoJPY, 2))$
-
-- 시기마다 시장에 영향을 주는 주요 macro indicator들이 많은데, 실시간으로 거래가 되는 future자산을 활용하면 성능 개선에 도움을 줄 수 있을 것이라고 생각하여 추가하였다.
-- 내부 연구 결과 시장에 영향을 주는 핵심 macro indicator는 **USD/JPY**로 보았고, 이를 이용해 예측치를 조정하는 후처리 연산을 추가하였다. 엔화는 널리 알려진 안전자산으로 일반적으로 엔화가치가 상승하면 안전자산(Ex.채권) 선호심리가 증가하고 반대면 위험자산(Ex.주식) 선호심리가 증가한다.
-- USDtoJPY의 경우 당일 변화율이며, **반올림 연산을 통해 소수 3째자리 이하의 변동에 대해서는 고려하지 않도록 설계하였다.**
+### 1. DenseNet Architecture
+- 이미지 관련 Task에 주로 쓰이는 **DenseNet 아키텍처를 다른 Task에 차용해도 좋은 성능을 낼 수 있음을 증명**
+![image](https://github.com/user-attachments/assets/31e1a682-99a3-4fe0-b6b6-a9eb3cc15705)
